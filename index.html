@@ -9,22 +9,31 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,300;0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+  /* TIPOGRAFÍA OFICIAL (Kit Digital SLEP Del Pino): gobCL */
+  @font-face { font-family: 'gobCL'; src: url('fonts/gobCL_Light.otf') format('opentype');   font-weight: 300; font-display: swap; }
+  @font-face { font-family: 'gobCL'; src: url('fonts/gobCL_Regular.otf') format('opentype'); font-weight: 400; font-display: swap; }
+  @font-face { font-family: 'gobCL'; src: url('fonts/gobCL_Bold.otf') format('opentype');    font-weight: 700; font-display: swap; }
+  @font-face { font-family: 'gobCL'; src: url('fonts/gobCL_Heavy.otf') format('opentype');   font-weight: 800; font-display: swap; }
 
   :root {
-    --navy: #0f2645;
-    --teal: #1a7a6e;
+    --brand: #25306b;
+    --brand-soft: #e9ecf8;
+    --on-brand: #ffffff;
+    --leng: #0284c7;
+    --mate: #ea580c;
     --gold: #c8922a;
-    --red: #c0392b;
-    --slate: #4a5568;
-    --light: #f7f8fc;
-    --border: #e2e8f0;
+    --red: #cf222e;
+    --slate: #5a6078;
+    --light: #f5f6fa;
+    --border: #e1e4ee;
+    --r: 12px;
+    --font: 'gobCL', 'Segoe UI', Arial, sans-serif;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font);
     background: var(--light);
     color: #1a202c;
     min-height: 100vh;
@@ -32,29 +41,28 @@
 
   /* ─── HEADER ─── */
   header {
-    background: var(--navy);
-    color: white;
-    padding: 18px 32px;
+    background: white;
+    color: var(--brand);
+    padding: 14px 32px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    border-bottom: 1px solid var(--border);
   }
+  /* Línea fina con los 6 colores del logo (detalle de marca, Kit Digital) */
+  header::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #92c140 0 16.66%, #e94252 16.66% 33.33%, #3cbff0 33.33% 50%, #f7d73e 50% 66.66%, #397bbe 66.66% 83.33%, #ee798b 83.33% 100%); }
   .header-brand { display: flex; align-items: center; gap: 14px; }
   .header-logo {
-    width: 46px; height: 46px; background: var(--teal);
-    border-radius: 10px; display: flex; align-items: center;
-    justify-content: center; font-size: 22px;
+    height: 44px; width: auto; object-fit: contain;
   }
-  .header-title { font-family: 'Source Serif 4', serif; }
-  .header-title h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
-  .header-title p { font-size: 0.75rem; color: #94a3b8; margin-top: 1px; }
+  .header-title h1 { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.01em; color: var(--brand); }
+  .header-title p { font-size: 0.75rem; color: var(--slate); margin-top: 1px; }
   .header-badge {
-    background: var(--gold); color: white; padding: 4px 12px;
-    border-radius: 20px; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.05em;
+    background: var(--brand-soft); color: var(--brand); padding: 4px 12px;
+    border-radius: 20px; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
   }
 
   /* ─── SEARCH BAR ─── */
@@ -71,12 +79,12 @@
   }
   .search-wrapper input {
     width: 100%; padding: 10px 16px 10px 42px;
-    border: 2px solid var(--border); border-radius: 10px;
-    font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
-    outline: none; transition: border-color 0.2s;
+    border: 1px solid var(--border); border-radius: 8px;
+    font-family: var(--font); font-size: 0.95rem;
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
     background: var(--light);
   }
-  .search-wrapper input:focus { border-color: var(--teal); background: white; }
+  .search-wrapper input:focus { border-color: var(--brand); background: white; box-shadow: 0 0 0 3px var(--brand-soft); }
   .search-icon {
     position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
     color: var(--slate); font-size: 15px; pointer-events: none;
@@ -92,17 +100,17 @@
     justify-content: space-between; align-items: center;
     border-bottom: 1px solid var(--border); transition: background 0.15s;
   }
-  .result-item:hover { background: #f0fdf9; }
+  .result-item:hover { background: var(--brand-soft); }
   .result-name { font-size: 0.85rem; font-weight: 500; }
   .result-meta { font-size: 0.75rem; color: var(--slate); }
   .btn-pdf {
-    background: var(--navy); color: white; border: none;
-    padding: 10px 20px; border-radius: 10px; font-family: 'DM Sans', sans-serif;
+    background: var(--brand); color: white; border: none;
+    padding: 10px 20px; border-radius: 8px; font-family: var(--font);
     font-size: 0.88rem; font-weight: 600; cursor: pointer;
     display: flex; align-items: center;
     gap: 8px; transition: background 0.2s;
   }
-  .btn-pdf:hover { background: #1a3a5c; }
+  .btn-pdf:hover { filter: brightness(1.15); }
   .btn-pdf:disabled { opacity: 0.6; cursor: not-allowed; }
 
   /* ─── MAIN CONTENT ─── */
@@ -116,10 +124,10 @@
   .empty-state h2 { font-size: 1.4rem; margin-bottom: 8px; }
 
   .school-header {
-    background: white; padding: 24px 28px; border-radius: 12px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 24px;
+    background: white; padding: 24px 28px; border-radius: var(--r);
+    box-shadow: 0 1px 4px rgba(37,48,107,0.06); border: 1px solid var(--border); margin-bottom: 24px;
   }
-  .school-name { font-family: 'Source Serif 4', serif; font-size: 1.6rem; font-weight: 600; margin-bottom: 6px; color: var(--navy); }
+  .school-name { font-family: var(--font); font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; color: var(--brand); }
   .school-meta { color: var(--slate); font-size: 0.92rem; }
 
   /* ─── KPI GRID ─── */
@@ -129,15 +137,16 @@
   }
   .kpi-card {
     background: white; border: 1px solid var(--border);
-    border-radius: 12px; padding: 16px;
-    border-top: 3px solid var(--teal);
-    text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border-radius: var(--r); padding: 16px 16px 16px 20px;
+    position: relative; overflow: hidden;
+    text-align: center; box-shadow: 0 1px 3px rgba(37,48,107,0.04);
   }
-  .kpi-label { font-size: 0.75rem; color: var(--slate); font-weight: 600; text-transform: uppercase; margin-bottom: 8px; }
-  .kpi-value { font-size: 1.8rem; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
-  .kpi-diff { font-size: 0.85rem; font-weight: 600; }
-  .diff-pos { color: #27ae60; }
-  .diff-neg { color: #e74c3c; }
+  .kpi-card::before { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 4px; background: var(--kpi-c, var(--brand)); }
+  .kpi-label { font-size: 0.72rem; color: var(--slate); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
+  .kpi-value { font-family: var(--font); font-size: 1.8rem; font-weight: 800; color: var(--kpi-c, var(--brand)); margin-bottom: 4px; }
+  .kpi-diff { font-size: 0.85rem; font-weight: 700; }
+  .diff-pos { color: #1a7f37; }
+  .diff-neg { color: var(--red); }
   .diff-neu { color: var(--slate); }
   .kpi-slep { font-size: 0.7rem; color: var(--slate); margin-top: 6px; }
   .kpi-na { color: #a0aec0; font-size: 0.9rem; margin-top: 10px; font-style: italic; }
@@ -147,13 +156,13 @@
     gap: 24px; margin-bottom: 24px;
   }
   .chart-card {
-    background: white; padding: 24px; border-radius: 12px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08); border: 1px solid var(--border);
+    background: white; padding: 24px; border-radius: var(--r);
+    box-shadow: 0 1px 4px rgba(37,48,107,0.06); border: 1px solid var(--border);
   }
   .chart-title {
-    font-size: 1.05rem; font-weight: 600; margin-bottom: 16px;
-    color: var(--navy); display: flex; align-items: center; gap: 8px;
-    border-bottom: 2px solid var(--border); padding-bottom: 10px;
+    font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;
+    color: var(--brand); display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid var(--border); padding-bottom: 10px;
   }
   .chart-canvas { position: relative; height: 280px; width: 100%; }
 
@@ -161,7 +170,7 @@
   .legend-strip {
     display: flex; gap: 20px; align-items: center; justify-content: center;
     padding: 12px 16px; background: white; border: 1px solid var(--border);
-    border-radius: 8px; margin-bottom: 24px; flex-wrap: wrap; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border-radius: 8px; margin-bottom: 24px; flex-wrap: wrap; box-shadow: 0 1px 3px rgba(37,48,107,0.04);
   }
   .leg-item { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--slate); font-weight: 500; cursor: pointer; user-select: none; transition: opacity 0.15s; }
   .leg-item:hover { opacity: 0.75; }
@@ -188,7 +197,7 @@
 
 <header>
   <div class="header-brand">
-    <div class="header-logo">📊</div>
+    <img class="header-logo" src="logo3.png" alt="Logo SLEP Del Pino">
     <div class="header-title">
       <h1>Datos SIMCE 2025 — SLEP Del Pino</h1>
       <p>Sistema de visualización y análisis de resultados educativos</p>
@@ -228,8 +237,8 @@
       </div>
 
     <div class="legend-strip" id="legend-evolucion" style="display:none;">
-      <div class="leg-item"><div class="leg-dot" style="background:#2563eb"></div>Lenguaje</div>
-      <div class="leg-item"><div class="leg-dot" style="background:#dc2626"></div>Matemática</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--leng)"></div>Lenguaje</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--mate)"></div>Matemática</div>
       <span class="legend-hint">Click: mostrar/ocultar &nbsp;|&nbsp; doble click: mostrar todo</span>
     </div>
 
@@ -353,6 +362,9 @@ let currentSchool = null;
 let chartsRegistry = {};
 
 // ─── UTILIDADES ──────────────────────────────────────────────────────
+// Color de una variable CSS del tema, p. ej. cssVar('--leng').
+const cssVar = name => getComputedStyle(document.body).getPropertyValue(name).trim();
+
 function debounce(fn, wait) {
   let t;
   return function(...args) {
@@ -490,12 +502,12 @@ function diffLine(val, ref, refLabel) {
 function renderKPIs(school) {
   const container = document.getElementById('kpi-container');
   const metrics = [
-    { label: '4° Básico Leng.', valKey: 'prom_4b_len_2025', key: 'PROM_4B_LEN' },
-    { label: '4° Básico Mat.', valKey: 'prom_4b_mat_2025', key: 'PROM_4B_MAT' },
-    { label: '8° Básico Leng.', valKey: 'prom_8b_len_2025', key: 'PROM_8B_LEN' },
-    { label: '8° Básico Mat.', valKey: 'prom_8b_mat_2025', key: 'PROM_8B_MAT' },
-    { label: '2° Medio Leng.', valKey: 'prom_2m_len_2025', key: 'PROM_2M_LEN' },
-    { label: '2° Medio Mat.', valKey: 'prom_2m_mat_2025', key: 'PROM_2M_MAT' }
+    { label: '4° Básico Leng.', valKey: 'prom_4b_len_2025', key: 'PROM_4B_LEN', color: 'var(--leng)' },
+    { label: '4° Básico Mat.', valKey: 'prom_4b_mat_2025', key: 'PROM_4B_MAT', color: 'var(--mate)' },
+    { label: '8° Básico Leng.', valKey: 'prom_8b_len_2025', key: 'PROM_8B_LEN', color: 'var(--leng)' },
+    { label: '8° Básico Mat.', valKey: 'prom_8b_mat_2025', key: 'PROM_8B_MAT', color: 'var(--mate)' },
+    { label: '2° Medio Leng.', valKey: 'prom_2m_len_2025', key: 'PROM_2M_LEN', color: 'var(--leng)' },
+    { label: '2° Medio Mat.', valKey: 'prom_2m_mat_2025', key: 'PROM_2M_MAT', color: 'var(--mate)' }
   ];
   const comunaProm = COMUNA_2025[school.comuna];
 
@@ -504,7 +516,7 @@ function renderKPIs(school) {
     const val = school[m.valKey];
     if (val === null || val === undefined || val === "") {
       html += `
-        <div class="kpi-card">
+        <div class="kpi-card" style="--kpi-c: ${m.color}">
           <div class="kpi-label">${m.label} (2025)</div>
           <div class="kpi-na">Sin datos recientes</div>
         </div>`;
@@ -512,7 +524,7 @@ function renderKPIs(school) {
       const slepVal = SLEP_2025[m.key];
       const comunaVal = comunaProm ? comunaProm[m.key] : undefined;
       html += `
-        <div class="kpi-card">
+        <div class="kpi-card" style="--kpi-c: ${m.color}">
           <div class="kpi-label">${m.label} (2025)</div>
           <div class="kpi-value">${val}</div>
           ${diffLine(val, slepVal, 'SLEP')}
@@ -560,15 +572,15 @@ function renderEvolutionCharts(school) {
           datasets: [
             {
               label: 'Lenguaje', data: lenData,
-              borderColor: '#2563eb', backgroundColor: '#2563eb',
+              borderColor: cssVar('--leng'), backgroundColor: cssVar('--leng'),
               tension: 0.3, pointRadius: 5, spanGaps: true,
-              datalabels: { align: 'top', offset: 6, color: '#2563eb', font: {weight: 'bold', size: 11} }
+              datalabels: { align: 'top', offset: 6, color: cssVar('--leng'), font: {weight: 'bold', size: 11} }
             },
             {
               label: 'Matemática', data: matData,
-              borderColor: '#dc2626', backgroundColor: '#dc2626',
+              borderColor: cssVar('--mate'), backgroundColor: cssVar('--mate'),
               tension: 0.3, pointRadius: 5, spanGaps: true,
-              datalabels: { align: 'bottom', offset: 6, color: '#dc2626', font: {weight: 'bold', size: 11} }
+              datalabels: { align: 'bottom', offset: 6, color: cssVar('--mate'), font: {weight: 'bold', size: 11} }
             }
           ]
         },
