@@ -114,6 +114,36 @@
   .btn-pdf:hover { filter: brightness(1.15); }
   .btn-pdf:disabled { opacity: 0.6; cursor: not-allowed; }
 
+  /* MODAL DE AYUDA */
+  .help-btn {
+    width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--border);
+    background: white; color: var(--slate); font-weight: 800; font-size: 0.9rem;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;
+    flex-shrink: 0;
+  }
+  .help-btn:hover { border-color: var(--brand); color: var(--brand); }
+  #help-overlay {
+    position: fixed; inset: 0; background: rgba(26,32,44,0.5); z-index: 6000;
+    display: none; align-items: center; justify-content: center; padding: 2rem;
+  }
+  #help-overlay.open { display: flex; }
+  .help-card {
+    background: white; border: 1px solid var(--border); border-radius: var(--r);
+    padding: 1.8rem 2rem; width: 100%; max-width: 560px; max-height: 85vh; overflow-y: auto;
+    box-shadow: 0 12px 40px rgba(37,48,107,0.2);
+  }
+  .help-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.1rem; }
+  .help-card-header h2 { font-size: 1.05rem; font-weight: 800; color: var(--brand); }
+  .help-close { background: none; border: none; cursor: pointer; color: var(--slate); font-size: 1.5rem; line-height: 1; padding: 0.1rem 0.4rem; }
+  .help-close:hover { color: #1a202c; }
+  .help-section { margin-bottom: 1.2rem; }
+  .help-section:last-child { margin-bottom: 0; }
+  .help-section h3 { font-size: 0.78rem; font-weight: 800; color: #1a202c; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.4rem; }
+  .help-section p { font-size: 0.85rem; color: var(--slate); line-height: 1.5; margin: 0 0 0.4rem; }
+  .help-section ul { padding-left: 1.1rem; margin: 0.3rem 0 0; }
+  .help-section li { font-size: 0.85rem; color: var(--slate); line-height: 1.5; margin-bottom: 0.3rem; }
+  .help-section li b { color: #1a202c; }
+
   /* ─── MAIN CONTENT ─── */
   main {
     max-width: 1280px; margin: 0 auto; padding: 28px 32px;
@@ -204,7 +234,10 @@
       <p>Sistema de visualización y análisis de resultados educativos</p>
     </div>
   </div>
-  <div class="header-badge">Evolución histórica</div>
+  <div style="display: flex; align-items: center; gap: 0.8rem;">
+    <button class="help-btn" onclick="abrirAyuda()" title="Ayuda">?</button>
+    <div class="header-badge">Evolución histórica</div>
+  </div>
 </header>
 
 <div class="search-section">
@@ -862,6 +895,35 @@ async function downloadPDF() {
   btn.disabled = false;
   btn.innerHTML = '<span>📥</span> Descargar Informe PDF';
 }
+
+function abrirAyuda() { document.getElementById('help-overlay').classList.add('open'); }
+function cerrarAyuda() { document.getElementById('help-overlay').classList.remove('open'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarAyuda(); });
 </script>
+
+<div id="help-overlay" onclick="if (event.target === this) cerrarAyuda()">
+  <div class="help-card">
+    <div class="help-card-header">
+      <h2>Cómo usar este dashboard</h2>
+      <button class="help-close" onclick="cerrarAyuda()" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="help-section">
+      <h3>Buscador</h3>
+      <p>Escribe el nombre o el RBD del establecimiento para ver su evolución histórica SIMCE y su comparación con 2026.</p>
+    </div>
+    <div class="help-section">
+      <h3>Gráficos</h3>
+      <ul>
+        <li>Pasar el mouse sobre un punto muestra el valor exacto.</li>
+        <li>Clic en un ítem de la leyenda (Lenguaje/Matemática o Adecuado/Elemental/Insuficiente) oculta esa serie; doble clic la reactiva junto con las demás.</li>
+        <li>Los gráficos de puntaje van de 150 a 360 porque ese es el rango real de la escala SIMCE, no un recorte visual.</li>
+      </ul>
+    </div>
+    <div class="help-section">
+      <h3>Descargar Informe PDF</h3>
+      <p>Exporta un PDF con todos los gráficos del establecimiento actualmente seleccionado.</p>
+    </div>
+  </div>
+</div>
 </body>
 </html>
