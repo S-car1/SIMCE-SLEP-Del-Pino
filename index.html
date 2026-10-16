@@ -128,7 +128,7 @@
   <h4>¿Qué son los IDPS?</h4><p>Indicadores de Desarrollo Personal y Social (0 a 100): autoestima y motivación, clima de convivencia, participación y formación ciudadana, y hábitos de vida saludable. Se miden con cuestionarios a estudiantes, docentes y familias.</p>
   <h4>¿Qué significa «mismo grupo socioeconómico»?</h4><p>Cada establecimiento pertenece a un grupo socioeconómico (GSE) según el contexto de sus familias. Compararse con colegios similares permite una lectura más justa del contexto. <b>No es un ranking</b> y no dice que un establecimiento sea mejor o peor que otro.</p>
   <h4>¿Qué significa «significativo»?</h4><p>Que la diferencia es suficientemente grande como para que no se explique solo por el azar estadístico de la medición.</p>
-  <h4>¿Por qué faltan los años 2019–2021?</h4><p>El SIMCE no se aplicó esos años por la pandemia. La «medición anterior» de 2022 es la de 2018.</p>
+  <h4>¿Por qué faltan los años 2019–2021?</h4><p>En 2019 solo se evaluó 8° básico (el estallido social impidió evaluar 4° básico y 2° medio), y en 2020–2021 la pandemia impidió la aplicación habitual. En 4° básico y 2° medio, la «medición anterior» de 2022 es la de 2018.</p>
   <p style="margin-top:14px"><button class="btn" style="background:var(--brand);color:#fff" onclick="modal(0)">Cerrar</button></p>
 </div></div>
 
@@ -171,7 +171,7 @@ const mk=(id,cfg)=>{const el=document.getElementById(id);if(el)charts.push(new C
 fetch('datos.json').then(r=>r.json()).then(d=>{D=d;init()}).catch(e=>{$('#app').innerHTML='<div class="empty">No se pudieron cargar los datos ('+esc(e.message)+'). Abre el visor desde un servidor (GitHub Pages o <code>python -m http.server</code>).</div>'});
 
 function init(){
-  $('#foot').innerHTML=`Fuente: Agencia de Calidad de la Educación (bases públicas Simce e IDPS, 2015–2025). Los resultados deben leerse junto al contexto de cada comunidad educativa; las comparaciones con colegios del mismo grupo socioeconómico son referenciales.`;
+  $('#foot').innerHTML=`Fuente: Agencia de Calidad de la Educación (bases públicas Simce e IDPS, 2015–2025). Los promedios de «colegios SLEP» y de «comuna» (todos sus establecimientos, SLEP y no SLEP) son cálculos propios a partir de esas bases, ponderados por estudiantes evaluados. Los resultados deben leerse junto al contexto de cada comunidad educativa; las comparaciones con colegios del mismo grupo socioeconómico son referenciales.`;
   const q=$('#q'),res=$('#res');
   q.addEventListener('input',()=>{const t=clean(q.value);if(t.length<2){res.style.display='none';return}
     const m=D.colegios.filter(c=>clean(c.nombre).includes(t)||String(c.rbd).includes(t)).slice(0,12);
@@ -193,7 +193,7 @@ function refCard(n,p,tit){
   const r=(D.ref.slep[n]||{})[p]||{};const ys=Object.keys(r).sort();if(!ys.length)return'';
   const l=ys[ys.length-1],pr=ys[ys.length-2],d=pr?+(r[l]-r[pr]).toFixed(1):null;
   return `<div class="card kpi" style="border-left-color:${PCOL[p]}"><div class="l">${tit}</div><div class="v">${fmt(r[l])} <small>puntos · ${l}</small></div>
-  <div class="n">${pr?`${d>0?'+':d<0?'−':''}${fmt(Math.abs(d),1)} vs ${pr} (promedio ponderado por estudiantes)`:''}</div><div class="spark"><canvas id="sp-${n}-${p}"></canvas></div></div>`;
+  <div class="n">${pr?`${d>0?'+':d<0?'−':''}${fmt(Math.abs(d),1)} vs ${pr} (promedio de los colegios SLEP, calculado y ponderado por estudiantes)`:''}</div><div class="spark"><canvas id="sp-${n}-${p}"></canvas></div></div>`;
 }
 function home(){
   const comunas=[...new Set(D.colegios.map(c=>c.comuna))].sort();
@@ -222,7 +222,7 @@ function home(){
 function tabla(){
   const comunas=[...new Set(D.colegios.map(c=>c.comuna))].sort();
   const rows=D.colegios.filter(c=>!hf.comuna||c.comuna===hf.comuna).map(c=>{
-    const p=Object.keys(c.simce[hf.nivel]||{}).find(k=>k===hf.prueba)||null;const r=p?sRow(c,hf.nivel,p,hf.anio):null;
+    const p=Object.keys(c.simce[hf.nivel]||{}).find(k=>k===hf.prueba||(hf.prueba==='soc'&&k==='hist'))||null;const r=p?sRow(c,hf.nivel,p,hf.anio):null;
     const pv=p&&r?previo(c,hf.nivel,p,hf.anio):null;const e=p&&r?eRow(c,hf.nivel,p,hf.anio):null;return{c,r,e,pv}}).filter(x=>x.r);
   const optsN=Object.entries(NIV).map(([k,v])=>`<option value="${k}" ${hf.nivel===k?'selected':''}>${v}</option>`).join('');
   const optsP=[['lect','Lectura'],['mate','Matemática'],['nat','Ciencias Naturales'],['soc','Historia, Geografía y Cs. Sociales']].map(([k,v])=>`<option value="${k}" ${hf.prueba===k?'selected':''}>${v}</option>`).join('');
@@ -240,7 +240,7 @@ function tabla(){
 }
 function bajarCSV(){
   const L=['RBD;Establecimiento;Comuna;Nivel;Prueba;Año;Puntaje;Cambio vs anterior;Significativo;Diferencia con colegios similares;% Insuficiente;% Elemental;% Adecuado'];
-  window._rows.forEach(({c,r,e})=>L.push([c.rbd,c.nombre,c.comuna,NIV[hf.nivel],PRU[hf.prueba],hf.anio,r.punt,r.dif??'',r.sigA??'',r.difG??'',e?e.ins:'',e?e.ele:'',e?e.ade:''].join(';').replace(/\./g,',')));
+  window._rows.forEach(({c,r,e})=>L.push([c.rbd,c.nombre,c.comuna,NIV[hf.nivel],PRU[hf.prueba],hf.anio,r.punt,r.dif??'',r.sigA??'',r.difG??'',e?e.ins:'',e?e.ele:'',e?e.ade:''].map(v=>{v=typeof v==='number'?String(v).replace('.',','):String(v);return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(';')));
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+L.join('\n')],{type:'text/csv'}));a.download=`SIMCE_SLEP_${hf.nivel}_${hf.prueba}_${hf.anio}.csv`;a.click();
 }
 
@@ -269,17 +269,13 @@ function tResumen(s){
     B.push(['Contexto',`<b>${PRU[pl]} ${NIV[n]}:</b> ${rl.punt} puntos en ${yl}.${ctx}`])}
   if(el){const py=previo(s,n,pl,yl),pe=py?eRow(s,n,pl,py):null;B.push(['Estándares',`En ${PRU[pl]}, el <b>${fmt(el.ade)}%</b> de los estudiantes alcanzó el Estándar Adecuado${pe?` (en ${py} fue ${fmt(pe.ade)}%)`:''}.`])}
   if(pm){const ym=ultimo(s,n,pm),rm=sRow(s,n,pm,ym),py=previo(s,n,pm,ym),pr=py?sRow(s,n,pm,py):null;
-    if(rm)B.push(['Evolución',`<b>${PRU[pm]} ${NIV[n]}:</b> ${rm.punt} puntos en ${ym}.${pr?` Respecto de ${py} (${pr.punt}), ${rm.sigA==1?'el aumento es estadísticamente significativo':rm.sigA==-1?'la baja es estadísticamente significativa':'no hay un cambio estadísticamente significativo'}.`:''}`])}
-  const ia=Object.keys((s.idps[n]||{})).filter(a=>s.idps[n][a].AM).sort(),iy=ia[ia.length-1];
-  if(iy){const o=Object.keys(IND).filter(k=>s.idps[n][iy][k]&&s.idps[n][iy][k][0]!=null).sort((a,b)=>s.idps[n][iy][b][0]-s.idps[n][iy][a][0]);if(o.length)B.push(['IDPS',`<b>${IND[o[0]]}</b> es el indicador con mayor puntaje en ${iy} (${s.idps[n][iy][o[0]][0]}).`])}
-  let idpsProm=null;if(iy){const v=Object.keys(IND).map(k=>(s.idps[n][iy][k]||[])[0]).filter(x=>x!=null);if(v.length)idpsProm=Math.round(v.reduce((a,b)=>a+b)/v.length)}
-  const kp=(p)=>{const y=ultimo(s,n,p),r=sRow(s,n,p,y);if(!r)return'';const py=previo(s,n,p,y);const [k,t]=chipCtx(r.sigG);return `<div class="card kpi" style="border-left-color:${PCOL[p]}"><div class="l">${PRU[p]}</div><div class="v">${r.punt} <small>puntos · ${y}</small></div><div class="n">${r.dif!=null?pill(chipCambio(r.sigA)[0],sg(r.dif)+' vs '+py):''} ${r.simil!=null?`<br>Colegios similares: ${r.simil}`:''}</div></div>`};
+    if(rm)B.push(['Evolución',`<b>${PRU[pm]} ${NIV[n]}:</b> ${rm.punt} puntos en ${ym}.${rm.dif!=null?` Respecto de la medición anterior (${sg(rm.dif)} puntos), ${rm.sigA==1?'el aumento es estadísticamente significativo':rm.sigA==-1?'la baja es estadísticamente significativa':'no hay un cambio estadísticamente significativo'}.`:''}`])}
+  const kp=(p)=>{const y=ultimo(s,n,p),r=sRow(s,n,p,y);if(!r)return'';const py=previo(s,n,p,y);const [k,t]=chipCtx(r.sigG);return `<div class="card kpi" style="border-left-color:${PCOL[p]}"><div class="l">${PRU[p]}</div><div class="v">${r.punt} <small>puntos · ${y}</small></div><div class="n">${r.dif!=null?pill(chipCambio(r.sigA)[0],sg(r.dif)+' vs medición anterior'):''} ${r.simil!=null?`<br>Colegios similares: ${r.simil}`:''}</div></div>`};
   const ke=el?`<div class="card kpi" style="border-left-color:var(--ade)"><div class="l">% Adecuado · ${PRU[pl]}</div><div class="v">${fmt(el.ade)}% <small>${yl}</small></div><div class="n">de los estudiantes evaluados</div></div>`:'';
-  const ki=idpsProm?`<div class="card kpi"><div class="l">IDPS (promedio de 4 indicadores)</div><div class="v">${idpsProm} <small>${iy}</small></div><div class="n">escala 0–100</div></div>`:'';
   const labels=D.meta.anios_simce.map(String).filter(a=>ps.some(p=>sRow(s,n,p,a)));
   $('#tabbody').innerHTML=`<div class="card" style="margin-top:6px"><h3>Lo destacado</h3><div class="sub">Lectura pedagógica e informativa; no constituye un juicio sobre el establecimiento.</div><div class="insights">${B.map(([t,h])=>`<div class="card ins"><div class="t">${t}</div>${h}</div>`).join('')||'<div class="empty">Sin datos destacados</div>'}</div></div>
-  <div class="grid g4" style="margin:16px 0">${ps.slice(0,2).map(kp).join('')}${ke}${ki}</div>
-  <div class="grid g2"><div class="card"><h3>Evolución del puntaje ${NIV[n]}</h3><div class="sub">Puntaje promedio obtenido en cada medición. No hubo medición 2019–2021.</div><div class="chart-box"><canvas id="c1"></canvas></div></div>
+  <div class="grid g4" style="margin:16px 0">${ps.slice(0,2).map(kp).join('')}${ke}</div>
+  <div class="grid g2"><div class="card"><h3>Evolución del puntaje ${NIV[n]}</h3><div class="sub">Puntaje promedio obtenido en cada medición. Sin resultados 2020–2021. En 2019 solo se evaluó 8° básico.</div><div class="chart-box"><canvas id="c1"></canvas></div></div>
   <div class="card"><h3>Estándares de Aprendizaje · ${PRU[pl]}</h3><div class="sub">Distribución de estudiantes por nivel de aprendizaje.</div><div class="legend"><span><i style="background:var(--ade)"></i>Adecuado</span><span><i style="background:var(--ele)"></i>Elemental</span><span><i style="background:var(--ins)"></i>Insuficiente</span></div><div class="chart-box" style="height:300px"><canvas id="c2"></canvas></div></div></div>`;
   mk('c1',{type:'line',data:{labels,datasets:ps.slice(0,2).map(p=>({label:PRU[p],data:serie(s,n,p,labels),borderColor:PCOL[p],backgroundColor:PCOL[p],tension:.2,spanGaps:true,borderWidth:2.5,pointRadius:4}))},options:lineOpts(180,330)});
   stackedEDA('c2',s,n,pl);
@@ -298,7 +294,7 @@ function tSimce(s){
   const slep=labels.map(a=>((D.ref.slep[n]||{})[p]||{})[a]??null);
   const rows=[...labels].reverse().map(a=>{const r=sRow(s,n,p,a),[k1,t1]=chipCambio(r.sigA),[k2,t2]=chipCtx(r.sigG);
     return `<tr><td><b>${a}</b></td><td class="num"><b>${r.punt}</b>${r.marca?` <small title="${esc(r.marca)}">⚠</small>`:''}</td><td>${r.dif==null?'—':pill(k1,sg(r.dif)+' · '+t1)}</td><td>${r.simil==null?'—':`${r.simil} <span style="margin-left:6px">${pill(k2,sg(r.difG))}</span>`}</td><td class="num">${fmt(r.nEst)}</td></tr>`}).join('');
-  $('#tabbody').innerHTML=`<div style="margin-top:8px">${selP(s)}</div><div class="grid g21"><div class="card"><h3>Puntaje SIMCE ${PRU[p]} · ${NIV[n]}</h3><div class="sub">Línea punteada: promedio de colegios del mismo grupo socioeconómico. Línea fina: promedio SLEP (ponderado). No hubo medición 2019–2021.</div><div class="chart-box" style="height:340px"><canvas id="c1"></canvas></div></div>
+  $('#tabbody').innerHTML=`<div style="margin-top:8px">${selP(s)}</div><div class="grid g21"><div class="card"><h3>Puntaje SIMCE ${PRU[p]} · ${NIV[n]}</h3><div class="sub">Línea punteada: promedio de colegios del mismo grupo socioeconómico. Línea fina: promedio de los colegios SLEP (calculado, ponderado por estudiantes). Sin resultados 2020–2021. En 2019 solo se evaluó 8° básico.</div><div class="chart-box" style="height:340px"><canvas id="c1"></canvas></div></div>
   <div class="card"><h3>Cómo leer este gráfico</h3><p style="font-size:.88rem;margin:8px 0">• El puntaje va aproximadamente entre 150 y 360.</p><p style="font-size:.88rem;margin:8px 0">• «Significativo» significa que el cambio no se explica solo por azar estadístico.</p><p style="font-size:.88rem;margin:8px 0">• Los colegios similares son del mismo grupo socioeconómico a nivel nacional: sirven como contexto, no como ranking.</p><p style="font-size:.88rem;margin:8px 0">• ⚠ indica una marca de la Agencia sobre el puntaje.</p></div></div>
   <div class="card" style="margin-top:16px"><h3>Detalle por año</h3><div class="tablewrap" style="max-height:none;margin-top:8px"><table><thead><tr><th>Año</th><th class="num">Puntaje</th><th>Cambio vs medición anterior</th><th>Colegios similares</th><th class="num">Estudiantes evaluados</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
   mk('c1',{type:'line',data:{labels,datasets:[{label:'Este establecimiento',data:serie(s,n,p,labels),borderColor:PCOL[p],backgroundColor:PCOL[p],borderWidth:3,pointRadius:5,tension:.2,spanGaps:true},{label:'Colegios del mismo grupo socioeconómico',data:simil,borderColor:'#5a6078',borderDash:[6,5],borderWidth:2,pointRadius:3,spanGaps:true,datalabels:{display:false}},{label:'Promedio SLEP',data:slep,borderColor:'#9aa0b8',borderWidth:1.5,pointRadius:0,spanGaps:true,datalabels:{display:false}}]},options:lineOpts(180,330)});
@@ -343,7 +339,7 @@ function tComparacion(s){
   const n=st.nivel,p=st.prueba,ys=aniosS(s,n,p);
   if(!st.anio||!ys.includes(st.anio))st.anio=ys[ys.length-1];const y=st.anio,r=sRow(s,n,p,y);
   const sl=((D.ref.slep[n]||{})[p]||{})[y],co=(((D.ref.comuna||{})[s.comuna]||{})[n]||{})[p],cy=co?co[y]:null;
-  const pts=[['Este establecimiento',r.punt,'var(--brand)'],r.simil!=null?['Colegios del mismo grupo socioeconómico'+(r.gse?` (${GSE[r.gse]})`:''),r.simil,'#5a6078']:null,cy!=null?[`Promedio comuna ${s.comuna}`,cy,'#3cbff0']:null,sl!=null?['Promedio SLEP Del Pino',sl,'#92c140']:null].filter(Boolean).sort((a,b)=>a[1]-b[1]).map((x,i)=>[...x,i%2?'up':'dn']);
+  const pts=[['Este establecimiento',r.punt,'var(--brand)'],r.simil!=null?['Colegios del mismo grupo socioeconómico'+(r.gse?` (${GSE[r.gse]})`:''),r.simil,'#5a6078']:null,cy!=null?[`Promedio de la comuna de ${s.comuna.toLowerCase().split(' ').map(w=>w==='de'?w:w[0].toUpperCase()+w.slice(1)).join(' ')} (todos sus establecimientos, SLEP y no SLEP)`,cy,'#3cbff0']:null,sl!=null?['Promedio de los colegios SLEP Del Pino (calculado)',sl,'#92c140']:null].filter(Boolean).sort((a,b)=>a[1]-b[1]).map((x,i)=>[...x,i%2?'up':'dn']);
   const vals=pts.map(x=>x[1]),mn=Math.floor(Math.min(...vals)/10)*10-10,mx=Math.ceil(Math.max(...vals)/10)*10+10,pos=v=>(v-mn)/(mx-mn)*100;
   const [k,t]=chipCtx(r.sigG);
   const frase=r.difG==null?'No hay comparación con colegios del mismo grupo socioeconómico para este año.':r.sigG==1?`El puntaje está ${Math.abs(r.difG)} puntos sobre el promedio de colegios del mismo grupo socioeconómico.`:r.sigG==-1?`El puntaje está ${Math.abs(r.difG)} puntos bajo el promedio de colegios del mismo grupo socioeconómico.`:`El puntaje está ${Math.abs(r.difG)} puntos ${r.difG>=0?'sobre':'bajo'} el promedio de colegios similares, una diferencia que no es estadísticamente significativa (rango similar).`;
@@ -353,7 +349,7 @@ function tComparacion(s){
   <div class="card"><h3>${PRU[p]} ${NIV[n]} ${y}, en contexto</h3><div class="dlist">${[...pts].sort((a,b)=>b[1]-a[1]).map(([l,v,c])=>`<div class="dl"><div class="t"><span>${esc(l)}</span><b>${fmt(v,Number.isInteger(v)?0:1)}</b></div><div class="b"><i style="width:${Math.max(4,(v-150)/(360-150)*100)}%;background:${c}"></i></div></div>`).join('')}</div><div class="dumb"><div class="axis"></div>${pts.map(([l,v,c,pos2])=>`<div class="mk ${pos2}" style="left:${pos(v)}%"><div class="p" style="background:${c}"></div><div class="l"><b>${fmt(v,Number.isInteger(v)?0:1)}</b>${esc(l)}</div></div>`).join('')}</div>
   <div class="gap56">${r.difG!=null?pill(k,sg(r.difG)+' puntos · '+t):''}</div><p style="margin-top:8px;font-size:.92rem">${frase}</p>
   <div class="box" style="margin-top:12px">El grupo socioeconómico describe el contexto de las familias. Compararse con colegios similares permite una lectura más justa. <b>No es un ranking</b>: no dice que un establecimiento sea mejor o peor que otro.</div></div>
-  <div class="grid g2" style="margin-top:16px"><div class="card"><h3>Resumen de comparaciones (última medición)</h3><div class="tablewrap" style="max-height:none;margin-top:8px"><table><thead><tr><th>Prueba</th><th class="num">Este establecimiento</th><th class="num">Similares</th><th class="num">Comuna</th><th class="num">SLEP</th></tr></thead><tbody>${resumen}</tbody></table></div></div>
+  <div class="grid g2" style="margin-top:16px"><div class="card"><h3>Resumen de comparaciones (última medición)</h3><div class="tablewrap" style="max-height:none;margin-top:8px"><table><thead><tr><th>Prueba</th><th class="num">Este establecimiento</th><th class="num">Similares</th><th class="num">Comuna (todos los establec.)</th><th class="num">Colegios SLEP</th></tr></thead><tbody>${resumen}</tbody></table></div></div>
   <div class="card"><h3>Diferencia con colegios similares, por año</h3><div class="sub">Sobre o bajo el promedio de colegios del mismo grupo socioeconómico (puntos).</div><div class="chart-box" style="height:250px"><canvas id="c1"></canvas></div></div></div>`;
   mk('c1',{type:'bar',data:{labels:ys,datasets:[{data:brecha,backgroundColor:brecha.map(v=>v==null?'#ccc':v>=0?'#93c5fd':'#fcd68a'),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:20}},plugins:{legend:{display:false},datalabels:{display:true,anchor:'end',align:c=>c.dataset.data[c.dataIndex]>=0?'end':'start',font:{weight:700,size:11},formatter:v=>v==null?'':sg(v)}},scales:{y:{grid:{color:'#eef0f6'}},x:{grid:{display:false}}}}});
 }
