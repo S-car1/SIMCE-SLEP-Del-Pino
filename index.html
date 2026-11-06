@@ -127,6 +127,7 @@
   <h4>¿Qué son los Estándares de Aprendizaje?</h4><p>Muestran qué porcentaje de estudiantes logró lo exigido por el currículum: <b>Adecuado</b> (satisfactoriamente), <b>Elemental</b> (de manera parcial) o <b>Insuficiente</b> (aún no demuestra los conocimientos más elementales).</p>
   <h4>¿Qué son los IDPS?</h4><p>Indicadores de Desarrollo Personal y Social (0 a 100): autoestima y motivación, clima de convivencia, participación y formación ciudadana, y hábitos de vida saludable. Se miden con cuestionarios a estudiantes, docentes y familias.</p>
   <h4>¿Qué significa «mismo grupo socioeconómico»?</h4><p>Cada establecimiento pertenece a un grupo socioeconómico (GSE) según el contexto de sus familias. Compararse con colegios similares permite una lectura más justa del contexto. <b>No es un ranking</b> y no dice que un establecimiento sea mejor o peor que otro.</p>
+  <h4>¿Qué es la Categoría de Desempeño 2019?</h4><p>Es la clasificación que la Agencia de Calidad asignó a cada establecimiento en 2019 (Alto, Medio, Medio-Bajo o Insuficiente), considerando resultados y otros indicadores en contexto. Es la <b>más reciente publicada</b>; no corresponde a los resultados 2025. Algunos establecimientos aparecen «Sin categoría» (por ejemplo, por baja matrícula).</p>
   <h4>¿Qué significa «significativo»?</h4><p>Que la diferencia es suficientemente grande como para que no se explique solo por el azar estadístico de la medición.</p>
   <h4>¿Por qué faltan los años 2019–2021?</h4><p>En 2019 solo se evaluó 8° básico (el estallido social impidió evaluar 4° básico y 2° medio), y en 2020–2021 la pandemia impidió la aplicación habitual. En 4° básico y 2° medio, la «medición anterior» de 2022 es la de 2018.</p>
   <p style="margin-top:14px"><button class="btn" style="background:var(--brand);color:#fff" onclick="modal(0)">Cerrar</button></p>
@@ -187,13 +188,17 @@ function route(){
   else{home();$('#btn-print').style.display='none'}
 }
 
+/* ---------- Categoría de Desempeño 2019 ---------- */
+const catNivel=(c,n)=>c.cat?(n==='2M'?c.cat.m:c.cat.b)||null:null;
+const catTxt=(s)=>{if(!s.cat)return'';const p=[];if(s.cat.b)p.push('Básica: <b>'+s.cat.b+'</b>');if(s.cat.m)p.push('Media: <b>'+s.cat.m+'</b>');return `<span title="Categoría de Desempeño 2019 de la Agencia de Calidad (la más reciente publicada)">· Cat. Desempeño 2019 · ${p.join(' · ')}</span>`};
 /* ---------- portada ---------- */
 let hf={comuna:'',nivel:'4B',prueba:'lect',anio:'2025'};
+function simRef(n,p,l){let w=0,a=0,b=0;D.colegios.forEach(c=>{const r=sRow(c,n,p,l);if(r&&r.simil!=null&&r.nEst){w+=r.nEst;a+=r.punt*r.nEst;b+=r.simil*r.nEst}});return w?{slep:a/w,sim:b/w}:null}
 function refCard(n,p,tit){
   const r=(D.ref.slep[n]||{})[p]||{};const ys=Object.keys(r).sort();if(!ys.length)return'';
   const l=ys[ys.length-1],pr=ys[ys.length-2],d=pr?+(r[l]-r[pr]).toFixed(1):null;
   return `<div class="card kpi" style="border-left-color:${PCOL[p]}"><div class="l">${tit}</div><div class="v">${fmt(r[l])} <small>puntos · ${l}</small></div>
-  <div class="n">${pr?`${d>0?'+':d<0?'−':''}${fmt(Math.abs(d),1)} vs ${pr} (promedio de los colegios SLEP, calculado y ponderado por estudiantes)`:''}</div><div class="spark"><canvas id="sp-${n}-${p}"></canvas></div></div>`;
+  <div class="n">${pr?`${d>0?'+':d<0?'−':''}${fmt(Math.abs(d),1)} vs ${pr} (promedio de los colegios SLEP, calculado y ponderado por estudiantes)`:''}</div>${(()=>{const q=simRef(n,p,l);return q?`<div class="n" style="margin-top:6px"><b>Colegios similares: ${fmt(q.sim,1)}</b> (${q.slep<q.sim?'−':'+'}${fmt(Math.abs(q.slep-q.sim),1)} puntos los colegios SLEP). Mismo grupo socioeconómico a nivel nacional.</div>`:''})()}<div class="spark"><canvas id="sp-${n}-${p}"></canvas></div></div>`;
 }
 function home(){
   const comunas=[...new Set(D.colegios.map(c=>c.comuna))].sort();
@@ -233,14 +238,14 @@ function tabla(){
    <label>Prueba<select onchange="hf.prueba=this.value;tabla()">${optsP}</select></label>
    <label>Año<select onchange="hf.anio=this.value;tabla()">${optsA}</select></label>
    <button class="btn" style="background:var(--brand-soft)" onclick="bajarCSV()">Descargar tabla (Excel/CSV)</button></div>
-   <div class="tablewrap"><table><thead><tr><th>Establecimiento</th><th>Comuna</th><th class="num">Puntaje</th><th>Cambio vs medición anterior</th><th class="num">% Adecuado</th><th>Colegios similares</th></tr></thead><tbody>
-   ${rows.map(({c,r,e})=>{const [k1,t1]=chipCambio(r.sigA);const [k2,t2]=chipCtx(r.sigG);return `<tr class="click" onclick="location.hash='#/c/${c.rbd}'"><td><b>${esc(c.nombre)}</b><br><small style="color:var(--slate)">RBD ${c.rbd}</small></td><td>${esc(c.comuna)}</td><td class="num"><b>${r.punt}</b></td><td>${r.dif==null?'—':pill(k1,sg(r.dif)+' · '+t1)}</td><td class="num">${e?fmt(e.ade,1)+'%':'—'}</td><td>${r.difG==null?'—':pill(k2,sg(r.difG)+' · '+t2)}</td></tr>`}).join('')||'<tr><td colspan="6" class="empty">Sin datos para esta combinación</td></tr>'}
-   </tbody></table></div><div class="note">${rows.length} establecimientos con resultado. “Colegios similares” = mismo grupo socioeconómico a nivel nacional.</div>`;
+   <div class="tablewrap"><table><thead><tr><th>Establecimiento</th><th>Comuna</th><th class="num">Puntaje</th><th>Cambio vs medición anterior</th><th class="num">% Adecuado</th><th>Colegios similares</th><th>Cat. Desempeño 2019</th></tr></thead><tbody>
+   ${rows.map(({c,r,e})=>{const [k1,t1]=chipCambio(r.sigA);const [k2,t2]=chipCtx(r.sigG);return `<tr class="click" onclick="location.hash='#/c/${c.rbd}'"><td><b>${esc(c.nombre)}</b><br><small style="color:var(--slate)">RBD ${c.rbd}</small></td><td>${esc(c.comuna)}</td><td class="num"><b>${r.punt}</b></td><td>${r.dif==null?'—':pill(k1,sg(r.dif)+' · '+t1)}</td><td class="num">${e?fmt(e.ade,1)+'%':'—'}</td><td>${r.difG==null?'—':pill(k2,sg(r.difG)+' · '+t2)}</td><td>${esc(catNivel(c,hf.nivel)||'—')}</td></tr>`}).join('')||'<tr><td colspan="7" class="empty">Sin datos para esta combinación</td></tr>'}
+   </tbody></table></div><div class="note">${rows.length} establecimientos con resultado. “Colegios similares” = mismo grupo socioeconómico a nivel nacional. “Cat. Desempeño 2019” = Categoría de Desempeño 2019 de la Agencia de Calidad (Básica para 4° básico y 8° básico, Media para 2° medio); es la más reciente publicada.</div>`;
   window._rows=rows;
 }
 function bajarCSV(){
-  const L=['RBD;Establecimiento;Comuna;Nivel;Prueba;Año;Puntaje;Cambio vs anterior;Significativo;Diferencia con colegios similares;% Insuficiente;% Elemental;% Adecuado'];
-  window._rows.forEach(({c,r,e})=>L.push([c.rbd,c.nombre,c.comuna,NIV[hf.nivel],PRU[hf.prueba],hf.anio,r.punt,r.dif??'',r.sigA??'',r.difG??'',e?e.ins:'',e?e.ele:'',e?e.ade:''].map(v=>{v=typeof v==='number'?String(v).replace('.',','):String(v);return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(';')));
+  const L=['RBD;Establecimiento;Comuna;Nivel;Prueba;Año;Puntaje;Cambio vs anterior;Significativo;Diferencia con colegios similares;Cat. Desempeño 2019;% Insuficiente;% Elemental;% Adecuado'];
+  window._rows.forEach(({c,r,e})=>L.push([c.rbd,c.nombre,c.comuna,NIV[hf.nivel],PRU[hf.prueba],hf.anio,r.punt,r.dif??'',r.sigA??'',r.difG??'',catNivel(c,hf.nivel)||'',e?e.ins:'',e?e.ele:'',e?e.ade:''].map(v=>{v=typeof v==='number'?String(v).replace('.',','):String(v);return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(';')));
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+L.join('\n')],{type:'text/csv'}));a.download=`SIMCE_SLEP_${hf.nivel}_${hf.prueba}_${hf.anio}.csv`;a.click();
 }
 
@@ -251,7 +256,7 @@ function ficha(s){
   const ps=prueba2(s,st.nivel);if(!ps.includes(st.prueba))st.prueba=ps[0];
   const gse=(()=>{for(const a of ['2025','2024','2023'])for(const p of ps){const r=sRow(s,st.nivel,p,a);if(r&&r.gse)return r.gse}return null})();
   const tabs=[['resumen','Resumen'],['simce','SIMCE'],['estandares','Estándares de Aprendizaje'],['idps','IDPS'],['comparacion','Comparación']];
-  $('#app').innerHTML=`<div class="school-head"><h2>${esc(s.nombre)}</h2><div class="meta"><span class="tag">${esc(s.dep||'')}</span><span>RBD ${s.rbd}</span><span>· ${esc(s.comuna)}</span>${gse?`<span>· Grupo socioeconómico ${NIV[st.nivel]}: <b>${GSE[gse]}</b></span>`:''}</div></div>
+  $('#app').innerHTML=`<div class="school-head"><h2>${esc(s.nombre)}</h2><div class="meta"><span class="tag">${esc(s.dep||'')}</span><span>RBD ${s.rbd}</span><span>· ${esc(s.comuna)}</span>${gse?`<span>· Grupo socioeconómico ${NIV[st.nivel]}: <b>${GSE[gse]}</b></span>`:''}${catTxt(s)}</div></div>
   <div class="tabs">${tabs.map(([k,t])=>`<button class="tab ${st.tab===k?'on':''}" onclick="location.hash='#/c/${s.rbd}/${k}'">${t}</button>`).join('')}</div>
   <div class="chips" id="selN">${ns.map(n=>`<button class="chip ${st.nivel===n?'on':''}" onclick="st.nivel='${n}';ficha(colegio(${s.rbd}))">${NIV[n]}</button>`).join('')}</div>
   <div id="tabbody"></div>`;
